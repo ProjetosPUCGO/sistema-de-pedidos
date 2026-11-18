@@ -1,4 +1,7 @@
 package entidades.enums;
 
-public class EstadoPagamento {
+public enum EstadoPagamento {
+    PENDENTE,
+    QUITADO,
+    CANCELADO;
 }
