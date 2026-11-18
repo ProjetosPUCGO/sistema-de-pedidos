@@ -8,7 +8,7 @@ Trabalho da disciplina de Programação Orientada a Objetos: implementação em 
 |------|-----------|
 | Maria Fernanda Peres Gonçalves | _preencher_ |
 | Arthur Ribeiro | _preencher_ |
-| Gustavo Silveira | _preencher_ |
+| Gustavo Silveira | 20261012000012 |
 
 ## Requisitos
 
