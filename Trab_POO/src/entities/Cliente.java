@@ -21,6 +21,13 @@ public class Cliente {
         this.email = email;
         this.telefone = telefone;
         this.endereco = endereco;
+        
+        //Validação automática de caracteres
+        if (cpfOuCnpj.length() == 11){
+            tipoCliente = TipoCliente.PESSOA_FISICA;
+        }else if (cpfOuCnpj.length() == 14){
+            tipoCliente = TipoCliente.PESSOA_JURIDICA;
+        }
 
     } 
 
