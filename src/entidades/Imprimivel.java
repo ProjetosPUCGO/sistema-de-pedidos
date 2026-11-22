@@ -1,4 +1,5 @@
 package entidades;
 
-public interface Imprimir {
+public interface Imprimivel {
+    String imprimir();
 }
