@@ -108,7 +108,7 @@ public class Produto {
         /*
         Na primeira linha, verifiquei se o objeto comparado é nulo, ou se ele é de uma classe diferente. Se o resultado for verdadeiro, ele retorna falso.
          */
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass())  return false;
         /*
         Nessa linha abaixo, o objeto Object o genérico vai ser convertido através de um casting para acessar o atributo ID.
          */
