@@ -13,7 +13,7 @@ public abstract class Pagamento implements Imprimivel {
     /*
     Conforme estabelecido na entidade pagamento, ela vai receber dois atributos: id e EstadoPagamento.
     A lógica de implementação do ID segue a mesma: Para que ele tenha um ID único, foi criado um atributo estático que, inicialmente, o valor
-    do ID é um atributo estático, e inicialmente começa com 1.
+    do ID é um atributo estático, e começa inicialmente com 1.
      */
     private Integer id;
     private EstadoPagamento estado;

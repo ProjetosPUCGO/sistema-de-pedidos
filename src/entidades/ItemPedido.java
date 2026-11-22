@@ -10,18 +10,18 @@ public class ItemPedido {
     private Integer quantidade = 1;
     private Double preco;
     private Produto produto;
-    private Pedido pedido;
+//    private Pedido pedido;
 
     /*
     Construtor de ItemPedido que inicializa os atributos desconto, quantidade, preco, produto e pedido. Exige as instâncias de Produto e Pedido para refletir a classe
     associativa definida no diagrama de classes.
      */
-    public ItemPedido(Double desconto, Integer quantidade, Double preco, Produto produto, Pedido pedido) {
+    public ItemPedido(Double desconto, Integer quantidade, Double preco, Produto produto) {// Pedido pedido) {
         this.desconto = desconto;
         this.quantidade = quantidade;
         this.preco = preco;
         this.produto = produto;
-        this.pedido = pedido;
+        // this.pedido = pedido;
     }
 
     /*
@@ -64,10 +64,6 @@ public class ItemPedido {
 
     public Integer getQuantidade() {
         return quantidade;
-    }
-
-    public Pedido getPedido() {
-        return pedido;
     }
 
     public Produto getProduto() {
