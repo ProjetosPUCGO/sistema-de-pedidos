@@ -31,8 +31,8 @@ public class PagamentoComBoleto extends Pagamento{
     Nele, utilizei o método .parse() para que seja feito a interpretação de (String > data, formato), estabelecido na variável estática fmt.
      */
 
-    public PagamentoComBoleto(String dataVencimentoStr) {
-        super();
+    public PagamentoComBoleto(Pedido pedido, String dataVencimentoStr) {
+        super(pedido);
         if (dataVencimentoStr == null) {
             throw new RegraDeNegocioException("A data de vencimento não pode ser nula.");
         }

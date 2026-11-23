@@ -18,8 +18,8 @@ public class PagamentoComCartao extends Pagamento {
     ser utilizado dentro do numeroDeParcelas.
      */
 
-    public PagamentoComCartao(Integer numeroDeParcelas) {
-        super();
+    public PagamentoComCartao(Pedido pedido, Integer numeroDeParcelas) {
+        super(pedido);
         setNumeroDeParcelas(numeroDeParcelas);
     }
 

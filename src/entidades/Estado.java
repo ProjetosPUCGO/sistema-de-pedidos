@@ -78,10 +78,12 @@ public class Estado {
     o nome da cidade, e o "this" vai ser responsável por mostrar que a cidade PERTENCE ao ESTADO,
     garantindo a regra de negócio estabelecida.
     Posteriormente, a lista de cidades foi usada para adicionar o nome da cidade.
+    O método devolve a cidade criada, para que ela possa ser usada ao cadastrar um endereço.
      */
-    public void adicionarCidade(String nome) {
+    public Cidade adicionarCidade(String nome) {
         Cidade cidade = new Cidade(nome, this);
         cidades.add(cidade);
+        return cidade;
     }
 
     /*

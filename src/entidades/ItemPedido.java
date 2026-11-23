@@ -2,68 +2,69 @@ package entidades;
 
 import exception.RegraDeNegocioException;
 
+/*
+Classe de associação entre Pedido e Produto: cada item liga um pedido a um produto
+e guarda seus próprios dados (quantidade, preço praticado e desconto).
+ */
 public class ItemPedido implements Imprimivel {
-    /*
-    Declara os atributos de estado (desconto, quantidade, preco) e as referências de associação (produto e pedido), conforme especificado no diagrama de classes.
-    */
     private Double desconto;
-    private Integer quantidade = 1;
+    private Integer quantidade;
     private Double preco;
     private Produto produto;
     private Pedido pedido;
 
-    /*
-    Construtor de ItemPedido que inicializa os atributos desconto, quantidade, preco, produto e pedido. Exige as instâncias de Produto e Pedido para refletir a classe
-    associativa definida no diagrama de classes.
-     */
-    public ItemPedido(Double desconto, Integer quantidade, Double preco, Produto produto, Pedido pedido) {
-        this.desconto = desconto;
-        this.quantidade = quantidade;
-        this.preco = preco;
-        this.produto = produto;
+    ItemPedido(Pedido pedido, Produto produto, Integer quantidade, Double desconto) {
+        if (pedido == null) {
+            throw new RegraDeNegocioException("O pedido do item não pode ser nulo.");
+        }
+        if (produto == null) {
+            throw new RegraDeNegocioException("O produto do item não pode ser nulo.");
+        }
         this.pedido = pedido;
+        this.produto = produto;
+        this.preco = produto.getPreco();
+        setQuantidade(quantidade);
+        validarDesconto(desconto);
+        this.desconto = desconto;
     }
 
     /*
-    Calcula e atribui o preço do ItemPedido o valor unitário do Produto, conforme regra de negócio.
+    preco não tem setter: é o preço praticado no momento do pedido e não pode mudar.
      */
-    public void setPreco(Produto produto) {
-        this.preco = produto.getPreco();
-    }
-
     public Double getPreco() {
         return preco;
-    }
-
-    /*
-    O método atualizarDesconto() calcula o desconto progressivo do ItemPedido, concedendo 10% a cada 10 unidades adicionadas, até o limite máximo de 50%.
-    */
-    private void atualizarDesconto() {
-        int quantitativoDecimal = quantidade / 10;
-        double percentual = quantitativoDecimal * 0.10;
-
-        if (percentual > 0.5)
-            percentual = 0.5;
-
-        if (desconto < 0)
-            throw new RegraDeNegocioException("Desconto não pode ser menor que zero.");
-
-        if (desconto > preco)
-            throw new RegraDeNegocioException("Desconto não pode ser maior que valor unitário do produto.");
-
-    this.desconto = percentual;
     }
 
     public Double getDesconto() {
         return desconto;
     }
 
-    public void setQuantidade(Integer quantidade) {
-        this.quantidade = quantidade;
+    private void validarDesconto(Double desconto) {
+        if (desconto == null || desconto < 0) {
+            throw new RegraDeNegocioException("O desconto não pode ser nulo ou menor que zero.");
+        }
+        if (desconto > preco) {
+            throw new RegraDeNegocioException("O desconto não pode ser maior que o preço unitário do produto.");
+        }
     }
 
     public Integer getQuantidade() {
         return quantidade;
+    }
+
+    /*
+    a quantidade só é alterada pelo próprio Pedido,
+    quando o mesmo produto é adicionado novamente.
+     */
+    void setQuantidade(Integer quantidade) {
+        if (quantidade == null || quantidade < 1) {
+            throw new RegraDeNegocioException("A quantidade deve ser maior ou igual a 1.");
+        }
+        this.quantidade = quantidade;
+    }
+
+    public Double getSubtotal() {
+        return (preco - desconto) * quantidade;
     }
 
     public Produto getProduto() {
@@ -74,23 +75,20 @@ public class ItemPedido implements Imprimivel {
         return pedido;
     }
 
+    /*
+    O item não imprime o pedido, mostra só os seus próprios dados.
+     */
     @Override
     public String imprimir() {
-        return "Pedido: " + pedido
-               + "\n"
-               + "Item pedido: \n"
-               + "Produto: " + produto
-               + "\n"
-               + "Preço: R$" + String.format("%.2f", preco)
-               + "\n"
-               + "Quantidade: " + quantidade.toString()
-               + "\n"
-               + "Desconto: R$" + String.format("%.2f", desconto);
+        return produto.getNome()
+                + " | Quantidaded: " + quantidade
+                + " | Preço: R$ " + String.format("%.2f", preco)
+                + " | Desconto: R$ " + String.format("%.2f", desconto)
+                + " | Subtotal: R$ " + String.format("%.2f", getSubtotal());
     }
 
     @Override
     public String toString() {
         return imprimir();
     }
-
 }

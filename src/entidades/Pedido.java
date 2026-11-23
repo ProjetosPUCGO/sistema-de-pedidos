@@ -1,24 +1,21 @@
 package entidades;
 
+import exception.RegraDeNegocioException;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import exception.RegraDeNegocioException;
 
 public class Pedido implements Imprimivel {
     // Identificador único do pedido.
     private Integer id;
-    // Momento em que o pedido foi criado.
+    // Momento em que o pedido foi criado (sem setter).
     private LocalDateTime instante;
 
-    // Lista de itens do pedido; cada pedido deve possuir pelo menos um item.
-    private List <ItemPedido> itens = new ArrayList<>();
-
-    // Dados associados ao pedido.
+    // Associações com os nomes do diagrama.
+    private final List<ItemPedido> itens = new ArrayList<>();
     private Cliente cliente;
     private Endereco enderecoDeEntrega;
     private Pagamento pagamento;
@@ -26,131 +23,122 @@ public class Pedido implements Imprimivel {
     // Contador usado para gerar o próximo identificador do pedido.
     private static Integer proxOid = 1;
     // Formato usado ao converter a data e hora em texto.
-    private static DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private static final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
-    // Inicializa o pedido e adiciona o primeiro item.
-    public Pedido (ItemPedido itemPedido, Cliente cliente, Endereco enderecoDeEntrega, Pagamento pagamento) {
-        this.id = proxOid ++;
+    /*
+    O construtor recebe só os dados obrigatórios que já existem: cliente e endereço de entrega.
+    Os itens entram depois, por adicionarItem(), e o pagamento por setPagamento().
+    O endereço precisa ser um dos endereços do cliente do pedido.
+     */
+    public Pedido(Cliente cliente, Endereco enderecoDeEntrega) {
+        if (cliente == null) {
+            throw new RegraDeNegocioException("O cliente do pedido não pode ser nulo.");
+        }
+        if (enderecoDeEntrega == null) {
+            throw new RegraDeNegocioException("O endereço de entrega não pode ser nulo.");
+        }
+        if (!cliente.equals(enderecoDeEntrega.getCliente())) {
+            throw new RegraDeNegocioException("O endereço de entrega não pertence ao cliente do pedido.");
+        }
         this.cliente = cliente;
         this.enderecoDeEntrega = enderecoDeEntrega;
-        this.pagamento = pagamento;
         this.instante = LocalDateTime.now();
-        adicionarItens(itemPedido);
+        this.id = proxOid++;
+        // Mantém a associação bidirecional: o cliente passa a conhecer este pedido.
+        cliente.adicionarPedido(this);
     }
 
-    // Retorna o identificador do pedido.
     public Integer getId() {
         return id;
     }
 
-    // Retorna a data e a hora de criação já formatadas.
-    public String getInstante() {
-        return instante.format(fmt);
+    public LocalDateTime getInstante() {
+        return instante;
     }
 
-    // Retorna os itens em uma coleção somente para leitura.
-    public List<ItemPedido> getItens() {
-        return Collections.unmodifiableList(itens);
-    }
-
-    // Converte todos os itens do pedido em uma única representação de texto.
-    public String mostrarItensPedido() {
-        StringBuilder sb = new StringBuilder();
-
-        // Adiciona a descrição de cada item separada por vírgulas.
-        for (ItemPedido listaItemPedido : itens) {
-            sb.append(listaItemPedido.toString()).append(", ");
-        }
-
-        // Remove os dois caracteres finais usados após o último item.
-        if (sb.length() > 0) {
-            sb.setLength(sb.length() - 2);
-        }
-
-        return sb.toString();
-    }
-
-    // Retorna o cliente associado ao pedido.
     public Cliente getCliente() {
         return cliente;
     }
 
-    // Retorna o endereço escolhido para entrega.
     public Endereco getEnderecoDeEntrega() {
         return enderecoDeEntrega;
     }
 
-    // Retorna o pagamento associado ao pedido.
     public Pagamento getPagamento() {
         return pagamento;
     }
 
-    // Retorna o próximo identificador disponível para um pedido.
-    public static Integer getProxOid() {
-        return proxOid;
+    /*
+    O pagamento é criado já apontando para o pedido (new PagamentoComCartao(pedido, 6))
+    e depois associado aqui. A verificação garante que os dois lados fiquem consistentes.
+     */
+    public void setPagamento(Pagamento pagamento) {
+        if (pagamento == null) {
+            throw new RegraDeNegocioException("O pagamento não pode ser nulo.");
+        }
+        if (pagamento.getPedido() != this) {
+            throw new RegraDeNegocioException("O pagamento não pertence a este pedido.");
+        }
+        this.pagamento = pagamento;
     }
 
-    // Valida e adiciona um item ao pedido, agrupando produtos repetidos.
-    public void adicionarItens(ItemPedido itemPedido) {
-        // Impede a inclusão de um item nulo.
-        if (itemPedido == null)
-            throw new RegraDeNegocioException("O item do pedido não pode estar nulo.");
+    // Retorna os itens em uma lista somente para leitura.
+    public List<ItemPedido> getItens() {
+        return Collections.unmodifiableList(itens);
+    }
 
-        // Garante que o item pertença a este pedido.
-        if (itemPedido.getPedido() != this)
-            throw new RegraDeNegocioException("O item do pedido não pertente ao pedido.");
-
-        // Verifica se o produto já existe na lista de itens.
-        for (ItemPedido difItemPedido : itens) {
-            if (difItemPedido.getProduto().equals(itemPedido.getProduto())) {
-                // Soma as quantidades dos itens do mesmo produto.
-                itemPedido.setQuantidade(difItemPedido.getQuantidade() + itemPedido.getQuantidade());
+    /*
+    Cria o item dentro do pedido (passando "this"). Se o produto já estiver no pedido,
+    soma a quantidade no item que já existe, em vez de criar outro.
+     */
+    public void adicionarItem(Produto produto, Integer quantidade, Double desconto) {
+        if (produto == null) {
+            throw new RegraDeNegocioException("O produto não pode ser nulo.");
+        }
+        if (quantidade == null || quantidade < 1) {
+            throw new RegraDeNegocioException("A quantidade deve ser maior ou igual a 1.");
+        }
+        for (ItemPedido item : itens) {
+            if (item.getProduto().equals(produto)) {
+                item.setQuantidade(item.getQuantidade() + quantidade);
                 return;
             }
         }
-
-        // Adiciona o item somente quando o produto ainda não existe no pedido.
-        itens.add(itemPedido);
+        itens.add(new ItemPedido(this, produto, quantidade, desconto));
     }
 
-    // Soma o valor de cada item após a aplicação do desconto.
-    public Double calcularSubtotalPedido() {
-        Double subtotal = 0.0;
-        for (ItemPedido listaItemPedido : itens)
-            subtotal += (listaItemPedido.getPreco() - listaItemPedido.getDesconto()) * listaItemPedido.getQuantidade();
-
-        return subtotal;
-    }
-
-    // Calcula o valor final do pedido.
-    public Double calcularTotalPedido() {
-        Double total = calcularSubtotalPedido();
+    // Soma dos subtotais dos itens.
+    public Double getTotal() {
+        double total = 0.0;
+        for (ItemPedido item : itens) {
+            total += item.getSubtotal();
+        }
         return total;
     }
 
-    // Monta um relatório completo com os dados e valores do pedido.
+    /*
+    O resumo é montado a partir de imprimir() de cada parte, usando Imprimivel como tipo,
+    para que Pedido não conheça a formatação das outras classes.
+     */
     @Override
     public String imprimir() {
-        return "Pedido: " + id
-               + "\n"
-               + "Data de Criação: " + getInstante()
-               + "\n"
-               + "Cliente: " + cliente
-               + "\n"
-               + "Endereço de Entrega: " + enderecoDeEntrega
-               + "\n"
-               + "Subtotal do Pedido: R$" + String.format("%.2f", calcularSubtotalPedido())
-               + "\n"
-               + "Total do Pedido: R$" + String.format("%.2f", calcularTotalPedido())
-               + "\n"
-               + "Método de Pagamento: " + pagamento
-               + "\n"
-               + "Itens do Pedido: " + mostrarItensPedido();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Pedido nº ").append(id).append("\n");
+        sb.append("Data: ").append(instante.format(fmt)).append("\n");
+        sb.append("Cliente: ").append(cliente.getNome()).append("\n");
+        sb.append("Itens:\n");
+        for (Imprimivel item : itens) {
+            sb.append("  ").append(item.imprimir()).append("\n");
+        }
+        sb.append("Total: R$ ").append(String.format("%.2f", getTotal())).append("\n");
+        Imprimivel pag = pagamento;
+        sb.append(pag == null ? "Pagamento: não definido" : pag.imprimir()).append("\n");
+        sb.append("Entrega: ").append(enderecoDeEntrega);
+        return sb.toString();
     }
 
     @Override
     public String toString() {
         return imprimir();
     }
-
 }

@@ -18,13 +18,22 @@ public abstract class Pagamento implements Imprimivel {
     private Integer id;
     private EstadoPagamento estado;
 
+    /*
+    Todo pagamento guarda a referência ao seu pedido (regra da seção 2).
+     */
+    private Pedido pedido;
+
     private static Integer proxOid = 1;
 
     /*
-    No construtor não foi colocado nenhum atributo, mas o ID vai ser inicializado com o valor de proxOid, e depois vai sendo incrementado o valor.
+    O construtor recebe o pedido ao qual o pagamento pertence. O ID vai ser inicializado com o valor de proxOid, e depois vai sendo incrementado o valor.
     O valor de estado vai começar como Pendente, conforme solicitado na documentação, e depois será alterado pelos métodos de alteração.
      */
-    public Pagamento() {
+    public Pagamento(Pedido pedido) {
+        if (pedido == null) {
+            throw new RegraDeNegocioException("O pedido do pagamento não pode ser nulo.");
+        }
+        this.pedido = pedido;
         this.id = proxOid++;
         this.estado = EstadoPagamento.PENDENTE;
     }
@@ -38,6 +47,10 @@ public abstract class Pagamento implements Imprimivel {
 
     public EstadoPagamento getEstado() {
         return estado;
+    }
+
+    public Pedido getPedido() {
+        return pedido;
     }
 
     /*
