@@ -2,7 +2,7 @@ package entidades;
 
 import exception.RegraDeNegocioException;
 
-public class ItemPedido {
+public class ItemPedido implements Imprimivel {
     /*
     Declara os atributos de estado (desconto, quantidade, preco) e as referências de associação (produto e pedido), conforme especificado no diagrama de classes.
     */
@@ -10,18 +10,18 @@ public class ItemPedido {
     private Integer quantidade = 1;
     private Double preco;
     private Produto produto;
-//    private Pedido pedido;
+    private Pedido pedido;
 
     /*
     Construtor de ItemPedido que inicializa os atributos desconto, quantidade, preco, produto e pedido. Exige as instâncias de Produto e Pedido para refletir a classe
     associativa definida no diagrama de classes.
      */
-    public ItemPedido(Double desconto, Integer quantidade, Double preco, Produto produto) {// Pedido pedido) {
+    public ItemPedido(Double desconto, Integer quantidade, Double preco, Produto produto, Pedido pedido) {
         this.desconto = desconto;
         this.quantidade = quantidade;
         this.preco = preco;
         this.produto = produto;
-        // this.pedido = pedido;
+        this.pedido = pedido;
     }
 
     /*
@@ -70,18 +70,27 @@ public class ItemPedido {
         return produto;
     }
 
+    public Pedido getPedido() {
+        return pedido;
+    }
+
     @Override
-    public String toString() {
+    public String imprimir() {
         return "Pedido: " + pedido
                + "\n"
                + "Item pedido: \n"
                + "Produto: " + produto
                + "\n"
-               + "Preço: R$" + preco.toString()
+               + "Preço: R$" + String.format("%.2f", preco)
                + "\n"
                + "Quantidade: " + quantidade.toString()
                + "\n"
-               + "Desconto: R$" + desconto.toString();
+               + "Desconto: R$" + String.format("%.2f", desconto);
+    }
+
+    @Override
+    public String toString() {
+        return imprimir();
     }
 
 }
